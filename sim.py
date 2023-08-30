@@ -1,4 +1,5 @@
 import numpy
+import streamlit
 from matplotlib import pyplot
 
 def MC(m, s, N):
