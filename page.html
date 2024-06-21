@@ -1,0 +1,140 @@
+
+<html>
+<head>
+    <title>Financial Simulator</title>
+</head>
+    <style>
+        .error-message {
+            color: red;
+        }
+    </style>
+    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+<body>
+    <font face = "arial">
+    <h2 align = "center"> Financial Simulation: <a href = "https://asarantsev.github.io/WebArchive/">Andrey Sarantsev</a> </h2>
+    <h3 align = "center"> Disclaimer: This is a demo version, simple and incomplete. </h3>
+    <h4 align = "center"> Our ongoing research has much more: Treasury and corporate bonds, factor (smart beta) models for stocks,
+    combined bond-stock portfolios. </h4>
+    <!-- <h2 align = "center"> <a href = "https://asarantsev.pythonanywhere.com/"> BACK </a> </h2> -->
+    <div>
+    <div style="float: left; width: 35%">
+        <form action="/compute" method="POST">
+        <label for = "large">
+        Small stocks = Russell 2000, Standard & Poor 600; <br/>
+        Large stocks = Russell 1000, Standard & Poor 500 </label>
+        <br/>
+        100% Small <input type = "range" name = "large" style = "width: 60%" min = 0 max = 1 value = 0.7 step = 0.01 list="large-markers"/> 100% Large
+        <datalist id="large-markers">
+        <option value="0"></option>
+        <option value="0.1"></option>
+        <option value="0.2"></option>
+        <option value="0.3"></option>
+        <option value="0.4"></option>
+        <option value="0.5"></option>
+        <option value="0.6"></option>
+        <option value="0.7"></option>
+        <option value="0.8"></option>
+        <option value="0.9"></option>
+        <option value="1"></option>
+        </datalist>
+        </p>
+        <label for="initialWealth"> Initial Wealth </label>
+        <input type="number" name="initialWealth" style = "height:30px;width:60px;" min = 0 value = 1000 required>
+        Time Horizon:
+        <label for="months"> Months </label>
+        <input type="number" name="months" style = "height:30px;width:40px;" min = 0 max = 11 value = 0 required>
+        <label for="years"> Years </label>
+        <input type="number" name="years" style = "height:30px;width:40px;" min = 0 max = 100 value = 10 required>
+        <br/>
+        <br/>
+        <label for = 'adjusted'> Nominal or real? </label> &emsp;
+        <select name = "adjusted" style = "height:30px;">
+            <option value="Nominal">Nominal (not inflation-adjusted) </option>
+            <option value="Real">Real (inflation-adjusted) </option>
+        </select>
+        <br/>
+        <br/>
+        <label for = 'indicators'> Market Conditions </label> &emsp;
+        <select name = 'indicators' style = "height:30px;">
+            <option value="user"> User Choice </option>
+            <option value="current"> Current </option>
+            <option value="average"> Averages </option>
+        </select>
+        &emsp;
+        <label for = "initialVol"> Volatility </label>
+        <input type="number" name="initialVol" style = "height:30px;width:60px;" min = 0 step = 0.01 value = 11 required> &emsp;
+        <br/>
+        <br/>
+        <label for = 'flowChoice'> Monthly Actions </label>
+        <select name = "flowChoice" style = "height:30px;">
+            <option value="Nothing"> None </option>
+            <option value="Withdrawals"> Withdrawals</option>
+            <option value="Contributions"> Contributions</option>
+        </select>
+        &emsp;
+        <label for = 'flow'> Monthly Amount</label>
+        <input type="number" name="flow" style="height:30px;width:50px;" min = 0 step = 0.1 value = 0 required>
+        <br/>
+        <br/>
+        <input type="submit" style="height:40px;font-size:16pt;" value = "Compute Wealth">
+        </form>
+    </div>
+    <div style="float: right; width: 65%">
+        <img width = "100%" src="/static/wealth.png" alt="Wealth Growth" align = "right">
+    </div>
+    </div>
+    <br/>
+    <br/>
+    <div>
+    <h2> Explanation of model</h2>
+    <h4> Idea </h4>
+    We divide large and small stock returns by volatility, which makes them closer to normal and independent identically distributed (IID).
+    Stochastic volatility and heteroscedastic models infer volatility values from stock returns data. But we can observe volatility independently.
+    This is Chicago Board of Exchange Volatility Index (VIX), available from 1986. After division by VIX, large stock returns become IID normal.
+    Finally, we regress normalized small returns over normalized large returns, similarly to the Capital Asset Pricing Model. See the code and data at
+    <a href = "https://github.com/asarantsev/Simulator/"> GitHub Repository.</a>
+    <h4> Data</h4>
+    <p>
+    We have data January 1986 - March 2024, <span class = "math inline"> \(T = 459\) </span> time points. </p>
+    <p> Volatility is taken from <a href = "https://fred.stlouisfed.org/">
+        Federal Reserve Economic Data (FRED) web site</a> monthly average data: Jan 1986 -- Feb 1990,
+        <a href = "https://fred.stlouisfed.org/series/VXOCLS"> CBOE VIX S&P 100: VXOCLS</a> and Mar 1990 -- Mar 2024
+        <a href = "https://fred.stlouisfed.org/series/VIXCLS"> CBOE VIX S&P 500: VIXCLS</a>
+    <span class="math inline">\(V(t), t = 1, \ldots, T.\)</span> </p>
+    <p> Large and small stock returns are from
+    <a href = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html">
+    Kenneth French Data Library:</a> <a href = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/Portfolios_Formed_on_ME_CSV.zip">
+    Portfolios Formed on Size:</a> value-weighted (capitalization-weighted) total returns,
+    Large Top 30%: <span class = "math inline"> \(L(t), t = 1, \ldots, T.\)</span>
+    Small Mid 40%: <span class = "math inline"> \(S(t), t = 1, \ldots, T.\)</span> </p>
+    <p> These are nominal (not inflation adjusted). To adjust them for inflation, we need to subtract monthly inflation rate, computed from the
+    (not seasonally adjusted) <a href = "https://fred.stlouisfed.org/series/CPIAUCNS"> Consumer Price Index</a> taken from FRED. We get then
+    real (inflation-adjusted) versions of returns. </p>
+    <h4> Model </h4>
+    <p> We model VIX as autoregression of order 1 in the logarithmic scale:
+    <span class = "math inline"> \( \ln V(t) = (1 - 0.119)\ln V(t-1) + 0.350 + W(t) \)</span> where
+    <span class = "math inline"> \( W \) </span> are independent identically distributed innovations with mean zero. This is a mean-reverting process,
+    stable in the long run. The long-term mean of VIX is around <span class = "math inline"> \( 20. \) </span> Remove 12 outliers from 459
+    in the right tail and model the rest as normal with mean zero and standard deviation <span class = "math inline"> \( 0.121.\) </span>
+    Thus innovations are modeled as a mixture with weights <span class = "math inline"> \( p = 12/459, 1-p\) </span> of the uniform distribution upon
+    these 12 outliers, and this normal distribution.
+    </p>
+    <p> We model large returns as
+    <span class = "math inline"> \( L(t) = 3.3557 - 0.1168 V(t) + Z_L(t)V(t)\)</span> for nominal total returns and
+    <span class = "math inline"> \( L(t) = 3.1594 - 0.1189 V(t) + Z_L(t)V(t)\)</span> for real total returns.
+    Here <span class = "math inline"> \( Z_L \) </span> are independent identically distributed innovations with mean zero.
+    They have normal distribution with mean zero and standard deviation <span class = "math inline"> \( 0.1941, 0.196 \) </span> for
+    nominal and real returns, respectively. </p>
+    <p> We model small returns as
+    <span class = "math inline"> \( S(t) = 0.000685V(t) + 1.06L(t) + Z_S(t)V(t)\)</span> for nominal total returns and
+    <span class = "math inline"> \( S(t) = 0.001412V(t) + 1.061 L(t) + Z_S(t)V(t)\)</span> for real total returns.
+    Here <span class = "math inline"> \( Z_S \) </span> are independent identically distributed innovations with mean zero. After removing
+    the top right tail outlier, equal to <span class = "math inline"> \( 0.5849, 0.587 \) </span> for nominal and real, respectively,
+    the rest is modeled as normal with mean zero and standard deviation <span class = "math inline"> 0.127 </span> in both cases. Thus
+    innovations are modeled as a mixture with weights <span class = "math inline"> \( q = 1/459, 1 - q.\) </span>
+    </p>
+    <p> All three series of innovations are assumed to be independent. </p>
+    </div>
+</body>
+</html>
