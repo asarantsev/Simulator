@@ -10,3 +10,5 @@ The file flask-app.py contains the actual simulation, embedded in the web page.
 The file page.html contains the HTML code of the web page itself.
 
 The file data.xlsx contains original financial data 1986-2024.
+
+The version with no number corresponds to model 1. The version with 2 corresponds to model 2.
